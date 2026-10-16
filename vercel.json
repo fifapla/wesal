@@ -21,11 +21,7 @@
         },
         {
             "src": "/admin.html",
-            "dest": "server.js"
-        },
-        {
-            "src": "/admin",
-            "dest": "server.js"
+            "dest": "public/admin.html"
         },
         {
             "src": "/(.*)",
