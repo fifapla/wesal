@@ -1,0 +1,6 @@
+{
+  "appId": "com.wesal.app",
+  "appName": "وصال",
+  "webDir": "public",
+  "server": { "androidScheme": "https", "cleartext": true }
+}

@@ -1,0 +1,18 @@
+# نشر مجاني على Render (يقرأه Render عند اختيار New ← Blueprint). قاعدة البيانات على Neon وليست هنا.
+services:
+  - type: web
+    name: wesal
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: WA_NUMBER
+        sync: false

@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>إدارة وصال</title><link rel="icon" href="icons/favicon.png">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{font-family:Cairo,Tahoma,sans-serif;max-width:900px;margin:0 auto;padding:18px 14px 60px;background:#f6ede2;color:#1f2a22}
+h1{font-size:24px;margin:6px 0}input,select,button,a.b{font:inherit;font-size:14px;padding:8px 14px;border-radius:12px;border:1.5px solid #d9cdb8;background:#fff}
+button,a.b{background:#0f3d22;color:#fff;border:0;cursor:pointer;text-decoration:none;display:inline-block}button.g{background:#8a8272}button.d{background:#b3382c}a.w,button.w{background:#1f9d55}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}.tabs button{background:#fff;color:#1f2a22;border:1.5px solid #d9cdb8}.tabs button.on{background:#0f3d22;color:#fff;border-color:#0f3d22}
+.r{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border-radius:16px;padding:12px 16px;margin:8px 0;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.r .a{display:flex;gap:6px;flex-wrap:wrap}.tag{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:700;background:#fff3d1;color:#8a6200;margin-inline-start:4px}.tag.ok{background:#dff3e6;color:#1f6b3a}.tag.bl{background:#e5eefc;color:#245}
+small{color:#6f6757}.brandh{display:flex;align-items:center;gap:12px}.brandh img{width:46px;height:46px;border-radius:12px;box-shadow:0 0 0 2px #fff,0 0 0 4px #e0c58c}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:8px 0 4px}.stat{background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.05);border-top:3px solid #b8914a}.stat b{display:block;font-size:26px;font-weight:800;color:#0f3d22;line-height:1.2}.stat span{font-size:12.5px;color:#6f6757;font-weight:600}
+.r{transition:box-shadow .2s}.r:hover{box-shadow:0 6px 18px rgba(0,0,0,.09)}#login{max-width:340px;margin:80px auto;background:#fff;padding:24px;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}#login input{width:100%;margin:6px 0}#err{color:#b3382c;font-size:13px}
+dialog{border:0;border-radius:20px;max-width:480px;width:92%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}dialog::backdrop{background:rgba(0,0,0,.45)}.kv{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px dashed #d9cdb8}.kv span{color:#6f6757}
+</style></head><body>
+<div id="login"><h1>دخول الإدارة</h1><input id="u" placeholder="اسم المستخدم" autocomplete="username" dir="ltr"><input id="p" type="password" placeholder="كلمة السر" autocomplete="current-password" dir="ltr"><div id="err"></div><button onclick="login()" style="width:100%;margin-top:8px">دخول</button></div>
+<div id="app" hidden>
+<div class="bar"><div class="brandh" style="flex:1"><img src="img/mark.webp" alt=""><h1>لوحة إدارة وصال</h1></div><span id="who"></span><button class="g" onclick="logout()">خروج</button></div>
+<div class="stats" id="stats"></div><div class="bar tabs"><button id="t1" class="on" onclick="tab(1)">المستخدمون</button><button id="t2" onclick="tab(2)">طلبات التعارف <span id="n2"></span></button></div>
+<div id="v1"><div class="bar"><select id="fs" onchange="load()"><option value="">الكل</option><option value="pending" selected>بانتظار التفعيل</option><option value="verified">المفعّلون</option></select><input id="fq" placeholder="بحث بالاسم أو الرقم" oninput="clearTimeout(window.T);window.T=setTimeout(load,300)"><span id="cnt"></span></div><div id="L"></div></div>
+<div id="v2" hidden><div id="Q"></div></div></div>
+<dialog id="dlg"><div id="dc"></div><button class="g" onclick="dlg.close()" style="margin-top:12px">إغلاق</button></dialog>
+<script>
+const $=i=>document.getElementById(i),e=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),g=x=>x=='groom'?'عريس':'عروس';
+let MSG='',US=[],last={p:0,r:0};
+const wa=(ph,t)=>'https://wa.me/20'+String(ph).replace(/^0/,'')+'?text='+encodeURIComponent(t);
+async function call(p,m,b){const r=await fetch(p,{method:m||'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(sessionStorage.at||'')},body:b?JSON.stringify(b):undefined});
+ if(r.status==401||r.status==403){logout();throw new Error('auth')}const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'خطأ');return j}
+async function login(){try{const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('u').value,password:$('p').value})});const j=await r.json();if(!r.ok)throw new Error(j.error);
+ sessionStorage.at=j.token;sessionStorage.un=j.username;start()}catch(x){$('err').textContent=x.message}}
+function logout(){sessionStorage.clear();$('app').hidden=true;$('login').hidden=false}
+function start(){$('login').hidden=true;$('app').hidden=false;$('who').textContent=sessionStorage.un;load();loadR();clearInterval(window.I);window.I=setInterval(()=>{load(1);loadR(1)},10000)}
+function tab(n){$('v1').hidden=n!=1;$('v2').hidden=n!=2;$('t1').className=n==1?'on':'';$('t2').className=n==2?'on':''}
+function beep(){try{const c=new AudioContext(),o=c.createOscillator();o.connect(c.destination);o.frequency.value=880;o.start();o.stop(c.currentTime+.18)}catch{}}
+async function stats(){try{const t=await call('/api/admin/stats');$('stats').innerHTML=[['بانتظار التفعيل',t.pending],['حسابات مفعّلة',t.verified],['عرسان',t.grooms],['عرائس',t.brides],['طلبات تعارف جديدة',t.requests]].map(([l,n])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')}catch{}}
+async function load(quiet){stats();try{const j=await call('/api/admin/users?status='+$('fs').value+'&q='+encodeURIComponent($('fq').value));MSG=j.msg;US=j.items;$('cnt').textContent=US.length+' مستخدم';
+ const ready=US.filter(x=>x.status=='pending'&&x.claimed).length;if($('fs').value=='pending'&&quiet&&ready>last.p)beep();last.p=ready;document.title=(ready?'('+ready+') ':'')+'إدارة وصال';
+ $('L').innerHTML=US.map(x=>`<div class="r"><div><b>${e(x.name)}</b> · ${x.age} · ${g(x.gender)}${x.status=='verified'?'<span class="tag ok">مفعّل</span>':'<span class="tag">بانتظار التفعيل</span>'}${x.claimed&&x.status=='pending'?'<span class="tag bl">أكّد الإرسال</span>':''}
+  <br><small dir="ltr">${e(x.phone)}${x.status=='pending'&&x.code?' · '+e(x.code):''}</small> <small>${e(x.residence)}</small></div>
+  <div class="a"><button class="g" onclick="view(${x.id})">عرض</button>
+  ${x.status=='pending'?`<button onclick="act(${x.id})">تفعيل</button>`:`${x.notified_at?`<span class="tag ok">✓ أُرسل التأكيد</span><a class="b w" target="_blank" href="${wa(x.phone,MSG)}">إعادة</a>`:`<a class="b w" target="_blank" href="${wa(x.phone,MSG)}" onclick="mark(${x.id})">إرسال تأكيد واتساب</a>`}<button class="g" onclick="off(${x.id})">إيقاف</button>`}
+  <button class="d" onclick="del(${x.id})">حذف</button></div></div>`).join('')||'<p>لا يوجد مستخدمون</p>'}catch(x){}}
+async function act(id){const w=window.open('','_blank');try{const r=await call('/api/admin/users/'+id+'/activate','POST');
+ if(w){w.location=wa(r.phone,r.msg);await call('/api/admin/users/'+id+'/notified','POST')}else alert('تم التفعيل. اضغط زر "إرسال تأكيد واتساب" بجوار المستخدم لفتح المحادثة.');}catch(x){if(w)w.close();alert(x.message)}load()}
+async function mark(id){try{await call('/api/admin/users/'+id+'/notified','POST')}catch{}setTimeout(load,800)}
+async function off(id){if(confirm('إيقاف الحساب وإرجاعه لحالة "بانتظار التفعيل"؟')){await call('/api/admin/users/'+id+'/deactivate','POST');load()}}
+async function del(id){if(confirm('حذف المستخدم وكل بياناته نهائياً؟')){await call('/api/admin/users/'+id,'DELETE');load()}}
+async function view(id){const j=await call('/api/admin/users/'+id);$('dc').innerHTML=`<h2 style="margin:0 0 4px">${g(j.user.gender)}</h2><div class="kv"><span>رقم التليفون</span><b dir="ltr">${e(j.user.phone)}</b></div>`+j.fields.map(f=>`<div class="kv"><span>${e(f.l)}</span><b>${e(f.v)}</b></div>`).join('');$('dlg').showModal()}
+const ST={new:'جديد',contacted:'تم التواصل',closed:'مغلق'};
+async function loadR(quiet){try{const R=await call('/api/admin/requests'),nw=R.filter(x=>x.status=='new').length;$('n2').textContent=nw?'('+nw+')':'';if(quiet&&nw>last.r)beep();last.r=nw;
+ $('Q').innerHTML=R.map(x=>`<div class="r"><div><b>${e(x.from_name)}</b> (${g(x.from_gender)}) ← <b>${e(x.to_name)}</b> <span class="tag">${ST[x.status]}</span><br><small dir="ltr">${e(x.from_phone)} → ${e(x.to_phone)}</small>${x.note?'<br><small>'+e(x.note)+'</small>':''}</div>
+ <div class="a"><a class="b w" target="_blank" href="${wa(x.from_phone,'مرحباً من مبادرة وصال، بخصوص طلب التعارف الذي أرسلته.')}">واتساب صاحب الطلب</a><a class="b w" target="_blank" href="${wa(x.to_phone,'مرحباً من مبادرة وصال، لدينا طلب تعارف يخصك ونود التحدث معك.')}">واتساب الطرف الآخر</a>
+ <button class="g" onclick="st(${x.id},'contacted')">تم التواصل</button><button class="g" onclick="st(${x.id},'closed')">إغلاق</button></div></div>`).join('')||'<p>لا توجد طلبات</p>'}catch{}}
+async function st(id,s){await call('/api/admin/requests/'+id,'POST',{status:s});loadR()}
+$('p').addEventListener('keydown',x=>x.key=='Enter'&&login());if(sessionStorage.at)start();
+</script></body></html>
