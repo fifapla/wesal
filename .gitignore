@@ -4,10 +4,3 @@ android/app/build
 android/.gradle
 *.jks
 *.keystore
-node_modules/
-.env.local
-.env.*.local
-android/app/build/
-android/build/
-*.apk
-.DS_Store

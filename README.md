@@ -58,15 +58,26 @@
 ### أوامر Android المختصرة (شغّلها من جذر المشروع، وليس من مجلد public)
 `npm run android:add` (مرة واحدة) ← `npm run android:sync` (بعد أي تعديل) ← `npm run android:open`
 
-## نشر مجاني للتجربة من أي مكان (Neon + Render)
-قاعدة البيانات على **Neon** (Postgres مجاني دائم، 0.5GB)، والسيرفر على **Render** (مجاني، ينام بعد 15 دقيقة خمول ويستيقظ في نحو دقيقة).
-1. **Neon:** أنشئ حساباً على neon.com ← New Project ← انسخ **Connection string** (الذي يبدأ بـ postgresql://).
-2. **أنشئ الجداول والأدمن على القاعدة السحابية من جهازك:** ضع الرابط في `.env` كـ `DATABASE_URL` ثم `npm run db:init` ثم `npm run admin:create`.
-3. **GitHub:** أنشئ مستودعاً خاصاً (Private) وارفع المشروع (ملف `.env` لا يُرفع، مستثنى في `.gitignore`).
-4. **Render:** New ← Web Service ← اربط المستودع. Build: `npm install --omit=dev`، Start: `node server.js`، Plan: Free. المتغيرات: `DATABASE_URL` و`JWT_SECRET` (نص عشوائي طويل) و`WA_NUMBER`. (أو New ← Blueprint ليقرأ `render.yaml`.)
-5. افتح الرابط `https://اسم-الخدمة.onrender.com` للتجربة، والإدارة على `/admin.html`.
-6. **التطبيق:** ضع الرابط في `public/config.js` (`window.WESAL_API='https://...onrender.com'`) ثم `npx cap sync android` وابنِ الـ APK. أي شخص يثبّته يدخل على نفس قاعدة البيانات. ويمكن أيضاً فتح الرابط مباشرة من متصفح الموبايل وتثبيته كتطبيق.
-7. لإبقاء السيرفر مستيقظاً: خدمة UptimeRobot المجانية تزور `/healthz` كل 5 دقائق.
+## نشر مجاني بدون بطاقة ائتمان (Neon + Vercel)
+قاعدة البيانات على **Neon** (Postgres مجاني دائم) والسيرفر على **Vercel** (Serverless، دائم التشغيل، بدون بطاقة). Render أصبح يطلب بطاقة فلم نعد نستخدمه.
+1. **Neon:** سجّل في neon.com ← New Project ← انسخ Connection string (يبدأ بـ postgresql://، ويفضّل النسخة pooled).
+2. **الجداول والأدمن على القاعدة السحابية (من جهازك):** ضع الرابط في `.env` كـ `DATABASE_URL` ثم `npm run db:init` ثم `npm run admin:create`.
+3. **Vercel بدون GitHub:**
+   `npm i -g vercel` ← `vercel login` ← `vercel` (أجب: Set up and deploy؟ Y، اسم المشروع wesal، المجلد ./ ، لا تعدّل الإعدادات).
+   ثم أضف المتغيرات: `vercel env add DATABASE_URL production` و`vercel env add JWT_SECRET production` (نص عشوائي طويل) و`vercel env add WA_NUMBER production`.
+   ثم النشر النهائي: `vercel --prod` ← تحصل على رابط `https://wesal-xxxx.vercel.app`.
+4. افتح الرابط للتجربة، والإدارة على `/admin.html`.
+5. **التطبيق:** ضع الرابط في `public/config.js` ثم `npx cap sync android` وابنِ الـ APK.
+> Vercel Hobby للاستخدام الشخصي/التجريبي (غير التجاري). عند الإطلاق الفعلي انقل لخطة مناسبة.
+
+### بديل مجاني من جهازك (بدون استضافة): Tailscale Funnel
+تثبيت Tailscale وتسجيل الدخول (مجاني) ثم `tailscale funnel 3000` يعطيك رابط HTTPS ثابتاً لسيرفرك المحلي (يعمل طالما الجهاز والسيرفر شغّالين).
 
 ## أيقونة وشاشة بدء التطبيق (Android)
 `npm run android:assets` يولّد أيقونات التشغيل وشاشة البدء من مجلد `assets/` (مبني على شعار وصال)، ثم `npx cap sync android` وابنِ من جديد.
+
+## تحديث 1.1
+- شاشة بداية 1.5 ثانية بشريط تحميل، مظهر داكن (تلقائي/فاتح/داكن) من تبويب «حسابي»، تبويب حساب جديد، نافذة تأكيد بدل نافذة المتصفح، حفظ مسودة الاستمارة تلقائياً.
+- الحالة الاجتماعية: «مطلق/مطلقة/أرمل/أرملة بدون أولاد» و«... مع أولاد» (أُلغيت «أرمل/أرملة» وحدها).
+- «بدون أولاد» يعطّل «هل لديك أولاد» (=لا) و«عدد الأولاد». «مع أولاد» يثبّت «نعم». عدد الإخوة 0–10، وعند 0 يتعطل «عمل الإخوة».
+- بعد التحديث: انشر السيرفر `vercel --prod` ثم `npx cap sync android` وابنِ الـ APK (قيم الحالات القديمة في البيانات التجريبية لن تظهر في فلاتر البحث).
